@@ -1,4 +1,5 @@
 // Build script to create a fully static version with embedded data
+// Version: 1.0.1 - Enhanced UI with doctor images and interactive filters
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
