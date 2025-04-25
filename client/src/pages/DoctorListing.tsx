@@ -13,6 +13,7 @@ export default function DoctorListing() {
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [filters, setFilters] = useQueryParams();
+  const [searchTerm, setSearchTerm] = useState('');
   
   const { isLoading, error, data } = useQuery({
     queryKey: ['doctors'],
@@ -61,8 +62,13 @@ export default function DoctorListing() {
       
       setDoctors(processedDoctors);
       setSpecialties(extractSpecialties(processedDoctors));
+      
+      // Set default filter to sort by experience
+      if (!filters.sortBy) {
+        setFilters({ ...filters, sortBy: 'experience' });
+      }
     }
-  }, [data]);
+  }, [data, filters, setFilters]);
   
   useEffect(() => {
     if (doctors.length > 0) {
@@ -78,6 +84,7 @@ export default function DoctorListing() {
   }, [doctors, filters]);
   
   const handleSearch = (searchTerm: string) => {
+    setSearchTerm(searchTerm);
     setFilters({ search: searchTerm });
   };
   
@@ -97,57 +104,101 @@ export default function DoctorListing() {
   }
   
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bajaj-blue text-white p-4 shadow-md">
-        <div className="container mx-auto flex justify-center items-center">
-          <SearchBar 
-            doctors={doctors} 
-            searchTerm={filters.search} 
-            onSearch={handleSearch} 
-          />
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Main Header */}
+      <header className="text-center py-6 bg-white border-b border-gray-200">
+        <h1 className="text-xl text-gray-600 font-medium">Find and connect with the best doctors</h1>
       </header>
       
-      {/* Main Content */}
-      <div className="container mx-auto p-4 flex-grow flex flex-col md:flex-row">
-        {/* Filter Sidebar */}
-        <div className="md:w-1/4 p-4 md:pr-6">
-          {isLoading ? (
-            <div className="animate-pulse space-y-4">
-              <div className="h-10 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-40 bg-gray-200 rounded"></div>
-              <div className="h-20 bg-gray-200 rounded"></div>
-            </div>
-          ) : (
-            <FilterPanel 
-              specialties={specialties} 
-              filters={filters} 
-              onFilterChange={handleFilterChange} 
+      {/* Filter Section */}
+      <div className="container mx-auto my-6 p-6 bg-white rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Search by name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Search by name</label>
+            <input
+              type="text"
+              placeholder="Enter doctor name..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          )}
-        </div>
-        
-        {/* Doctor Listing */}
-        <div className="md:w-3/4 flex-grow">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-              <span className="ml-2 text-gray-600">Loading doctors...</span>
-            </div>
-          ) : filteredDoctors.length > 0 ? (
-            <div className="space-y-4">
-              {filteredDoctors.map((doctor) => (
-                <DoctorCard key={doctor.id} doctor={doctor} />
+          </div>
+          
+          {/* Specialty selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
+            <select 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                const value = e.target.value;
+                handleFilterChange({ 
+                  specialties: value === "All Specialties" ? [] : [value]
+                });
+              }}
+            >
+              <option>All Specialties</option>
+              {specialties.map((specialty) => (
+                <option key={specialty} value={specialty}>
+                  {specialty}
+                </option>
               ))}
+            </select>
+          </div>
+          
+          {/* Sort by */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+            <div className="flex items-center">
+              <select 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => {
+                  handleFilterChange({ sortBy: e.target.value as any });
+                }}
+              >
+                <option value="experience">Experience: High to Low</option>
+                <option value="fees">Fees: Low to High</option>
+              </select>
+              <button 
+                className="ml-4 px-6 py-2 bg-blue-500 text-white rounded font-medium hover:bg-blue-600 transition-colors"
+                onClick={() => {
+                  setFilteredDoctors(
+                    filterDoctors(
+                      doctors,
+                      filters.search,
+                      filters.consultationType,
+                      filters.specialties,
+                      filters.sortBy
+                    )
+                  );
+                }}
+              >
+                Apply Filters
+              </button>
             </div>
-          ) : (
-            <div className="p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm">
-              <p>No doctors match your search criteria.</p>
-              <p className="mt-2">Try adjusting your filters or search term.</p>
-            </div>
-          )}
+          </div>
         </div>
+      </div>
+      
+      {/* Doctor Listing */}
+      <div className="container mx-auto px-6 pb-6 flex-grow">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <span className="ml-2 text-gray-600">Loading doctors...</span>
+          </div>
+        ) : filteredDoctors.length > 0 ? (
+          <div className="space-y-6">
+            {filteredDoctors.map((doctor) => (
+              <DoctorCard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+            <p>No doctors match your search criteria.</p>
+            <p className="mt-2">Try adjusting your filters or search term.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-import { Award, MapPin, CheckCircle, Video } from 'lucide-react';
 import { Doctor } from '../types/doctor';
 import { getRandomImageUrl } from '../lib/doctors';
 import { Card } from '@/components/ui/card';
@@ -8,68 +7,73 @@ interface DoctorCardProps {
 }
 
 export default function DoctorCard({ doctor }: DoctorCardProps) {
+  // Function to get the image URL with proper fallback
+  const getImageUrl = () => {
+    if (!doctor.imageUrl || doctor.imageUrl === 'null') {
+      return getRandomImageUrl(doctor.gender);
+    }
+    return doctor.imageUrl;
+  };
+
   return (
     <Card 
-      className="p-4 bg-white rounded-lg shadow-sm mb-4" 
+      className="overflow-hidden bg-white rounded-lg shadow-sm mb-4" 
       data-testid="doctor-card"
     >
       <div className="flex flex-col md:flex-row">
-        <div className="md:w-16 w-full flex justify-center mb-4 md:mb-0">
-          <img 
-            src={doctor.imageUrl || getRandomImageUrl(doctor.gender)} 
-            alt={doctor.name} 
-            className="w-16 h-16 rounded-full object-cover"
-          />
+        {/* Doctor Image */}
+        <div className="md:w-1/3 w-full mb-4 md:mb-0 p-4 md:p-6 bg-gray-100 flex justify-center items-center">
+          <div className="w-full aspect-square max-w-[200px] bg-gray-200 rounded-md flex items-center justify-center overflow-hidden">
+            {doctor.imageUrl && doctor.imageUrl !== 'null' ? (
+              <img 
+                src={getImageUrl()} 
+                alt={doctor.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.parentElement!.innerHTML = '<div class="doctor-image-placeholder">Doctor Image</div>';
+                }}
+              />
+            ) : (
+              <div className="doctor-image-placeholder">Doctor Image</div>
+            )}
+          </div>
         </div>
-        <div className="md:ml-4 flex-1">
+        
+        {/* Doctor Info */}
+        <div className="flex-1 p-4 md:p-6">
           <h3 
-            className="font-semibold text-lg bajaj-blue-text" 
+            className="font-semibold text-lg text-gray-800 mb-1" 
             data-testid="doctor-name"
           >
             {doctor.name}
           </h3>
           <p 
-            className="text-sm text-gray-600 mb-1" 
+            className="text-sm text-blue-500 font-medium uppercase mb-4" 
             data-testid="doctor-specialty"
           >
             {doctor.specialty}
           </p>
           
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <Award className="h-4 w-4 mr-1 text-blue-500" />
-            <span data-testid="doctor-experience">{doctor.experience} years experience</span>
+          <div className="space-y-2 mb-6">
+            <div className="flex items-start text-sm text-gray-600">
+              <span className="font-medium w-32">Experience:</span>
+              <span data-testid="doctor-experience">{doctor.experience} Years</span>
+            </div>
+            
+            <div className="flex items-start text-sm text-gray-600">
+              <span className="font-medium w-32">Consultation Fee:</span>
+              <span className="text-green-600 font-medium">₹ {doctor.fees}</span>
+            </div>
+            
+            <div className="flex items-start text-sm text-gray-600">
+              <span className="font-medium w-32">Location:</span>
+              <span>{doctor.location || 'Location not specified'}</span>
+            </div>
           </div>
           
-          {/* Consultation Modes */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {doctor.consultationMode.map((mode, index) => (
-              <span key={index} className="consultation-badge">
-                {mode === "Video Consult" ? (
-                  <><Video className="h-3 w-3 mr-1" /> {mode}</>
-                ) : (
-                  <>{mode}</>
-                )}
-              </span>
-            ))}
-          </div>
-          
-          <div className="flex items-center text-xs text-gray-600 mb-1">
-            <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
-            {doctor.clinicName || 'Private Clinic'}
-          </div>
-          <div className="flex items-center text-xs text-gray-600">
-            <MapPin className="h-4 w-4 mr-1 text-red-500" />
-            {doctor.location || 'Mumbai'}
-          </div>
-        </div>
-        <div className="mt-4 md:mt-0 md:ml-4 md:text-right">
-          <p 
-            className="font-bold text-lg bajaj-blue-text mb-2" 
-            data-testid="doctor-fee"
-          >
-            ₹ {doctor.fees}
-          </p>
-          <button className="book-appointment-btn">
+          <button className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full md:w-auto">
             Book Appointment
           </button>
         </div>

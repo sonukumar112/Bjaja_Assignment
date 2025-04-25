@@ -71,3 +71,18 @@
 .consultation-badge {
   @apply inline-flex items-center rounded-full py-1 px-2 text-xs font-medium bg-blue-100 text-blue-800 mr-2;
 }
+
+/* Doctor card styles */
+.doctor-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+  color: #888;
+  font-size: 1.5rem;
+  font-weight: 500;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding: 1rem;
+}

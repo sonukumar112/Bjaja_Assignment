@@ -58,8 +58,10 @@ export function filterDoctors(
   
   // Sort by fees or experience
   if (sortOption === 'fees') {
+    // Sort by fees low to high
     filteredDoctors.sort((a, b) => a.fees - b.fees);
-  } else if (sortOption === 'experience') {
+  } else {
+    // Default sort by experience high to low
     filteredDoctors.sort((a, b) => b.experience - a.experience);
   }
   
