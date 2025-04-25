@@ -1,4 +1,4 @@
-import { Award, MapPin, CheckCircle } from 'lucide-react';
+import { Award, MapPin, CheckCircle, Video } from 'lucide-react';
 import { Doctor } from '../types/doctor';
 import { getRandomImageUrl } from '../lib/doctors';
 import { Card } from '@/components/ui/card';
@@ -23,7 +23,7 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
         </div>
         <div className="md:ml-4 flex-1">
           <h3 
-            className="font-semibold text-lg text-gray-800" 
+            className="font-semibold text-lg bajaj-blue-text" 
             data-testid="doctor-name"
           >
             {doctor.name}
@@ -34,29 +34,42 @@ export default function DoctorCard({ doctor }: DoctorCardProps) {
           >
             {doctor.specialty}
           </p>
-          <p 
-            className="text-sm text-gray-600 mb-2" 
-            data-testid="doctor-experience"
-          >
-            {doctor.experience} yrs exp
-          </p>
+          
+          <div className="flex items-center text-sm text-gray-600 mb-2">
+            <Award className="h-4 w-4 mr-1 text-blue-500" />
+            <span data-testid="doctor-experience">{doctor.experience} years experience</span>
+          </div>
+          
+          {/* Consultation Modes */}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {doctor.consultationMode.map((mode, index) => (
+              <span key={index} className="consultation-badge">
+                {mode === "Video Consult" ? (
+                  <><Video className="h-3 w-3 mr-1" /> {mode}</>
+                ) : (
+                  <>{mode}</>
+                )}
+              </span>
+            ))}
+          </div>
+          
           <div className="flex items-center text-xs text-gray-600 mb-1">
-            <CheckCircle className="h-4 w-4 mr-1" />
+            <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
             {doctor.clinicName || 'Private Clinic'}
           </div>
           <div className="flex items-center text-xs text-gray-600">
-            <MapPin className="h-4 w-4 mr-1" />
+            <MapPin className="h-4 w-4 mr-1 text-red-500" />
             {doctor.location || 'Mumbai'}
           </div>
         </div>
         <div className="mt-4 md:mt-0 md:ml-4 md:text-right">
           <p 
-            className="font-bold text-gray-800 mb-2" 
+            className="font-bold text-lg bajaj-blue-text mb-2" 
             data-testid="doctor-fee"
           >
             ₹ {doctor.fees}
           </p>
-          <button className="bg-white bajaj-blue-text bajaj-blue-border border rounded px-4 py-2 text-sm font-medium hover:bajaj-blue hover:text-white transition-colors w-full md:w-auto">
+          <button className="book-appointment-btn">
             Book Appointment
           </button>
         </div>

@@ -71,37 +71,50 @@ export default function SearchBar({ doctors, searchTerm, onSearch }: SearchBarPr
     setShowSuggestions(false);
   };
 
+  const handleSearchClick = () => {
+    onSearch(inputValue);
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="relative w-full max-w-xl">
-      <div className="relative">
+      <div className="relative flex items-center">
+        <div className="absolute left-3 text-gray-400">
+          <Search className="h-5 w-5" />
+        </div>
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search Symptoms, Doctors, Specialties, Clinics"
-          className="w-full py-2 px-4 pr-10 rounded-md border-0 focus:ring-2 focus:ring-blue-400 text-gray-800"
+          placeholder="Search Doctors, Specialties, Clinics"
+          className="w-full py-3 px-10 rounded-md border-0 focus:ring-2 focus:ring-blue-500 text-gray-800 shadow-sm"
           value={inputValue}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           data-testid="autocomplete-input"
         />
-        <button className="absolute right-3 top-2.5 text-gray-500">
-          <Search className="h-5 w-5" />
+        <button 
+          className="absolute right-2 top-1.5 bg-[#0e4d92] text-white px-4 py-1.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm"
+          onClick={handleSearchClick}
+        >
+          Search
         </button>
       </div>
 
       {showSuggestions && (
         <div
           ref={dropdownRef}
-          className="absolute z-10 w-full bg-white rounded-md shadow-lg mt-1"
+          className="absolute z-10 w-full bg-white rounded-md shadow-lg mt-1 border border-gray-200 overflow-hidden"
         >
-          {matchingDoctors.map((doctor) => (
-            <AutocompleteSuggestion
-              key={doctor.id}
-              doctor={doctor}
-              onClick={handleSuggestionClick}
-            />
-          ))}
+          <div className="py-2">
+            {matchingDoctors.map((doctor) => (
+              <AutocompleteSuggestion
+                key={doctor.id}
+                doctor={doctor}
+                onClick={handleSuggestionClick}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

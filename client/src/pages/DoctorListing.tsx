@@ -4,7 +4,7 @@ import SearchBar from '@/components/SearchBar';
 import FilterPanel from '@/components/FilterPanel';
 import DoctorCard from '@/components/DoctorCard';
 import { API_URL, filterDoctors, extractSpecialties } from '@/lib/doctors';
-import { Doctor, DoctorsResponse } from '@/types/doctor';
+import { Doctor, ApiDoctor } from '@/types/doctor';
 import { useQueryParams } from '@/hooks/useQueryParams';
 import { Loader2 } from 'lucide-react';
 
@@ -21,20 +21,43 @@ export default function DoctorListing() {
       if (!response.ok) {
         throw new Error('Failed to fetch doctors');
       }
-      return response.json() as Promise<DoctorsResponse>;
+      return response.json() as Promise<ApiDoctor[]>;
     }
   });
   
   useEffect(() => {
-    if (data?.doctors) {
-      // Add random image URLs and ensure consistent data format
-      const processedDoctors = data.doctors.map(doctor => ({
-        ...doctor,
-        consultationMode: Array.isArray(doctor.consultationMode) 
-          ? doctor.consultationMode 
-          : ['Video Consult', 'In Clinic'],
-        imageUrl: doctor.imageUrl || undefined,
-      }));
+    if (data) {
+      // Transform API doctors to our application format
+      const processedDoctors = data.map(apiDoctor => {
+        // Extract fee number from string like "₹ 500"
+        const feeMatch = apiDoctor.fees.match(/\d+/);
+        const fees = feeMatch ? parseInt(feeMatch[0]) : 0;
+        
+        // Extract experience number from string like "13 Years of experience"
+        const expMatch = apiDoctor.experience.match(/\d+/);
+        const experience = expMatch ? parseInt(expMatch[0]) : 0;
+        
+        // Extract specialties as comma-separated string
+        const specialty = apiDoctor.specialities.map(s => s.name).join(', ');
+        
+        // Determine consultation modes
+        const consultationMode: ("Video Consult" | "In Clinic")[] = [];
+        if (apiDoctor.video_consult) consultationMode.push("Video Consult");
+        if (apiDoctor.in_clinic) consultationMode.push("In Clinic");
+        
+        return {
+          id: apiDoctor.id,
+          name: apiDoctor.name,
+          specialty,
+          experience,
+          fees,
+          clinicName: apiDoctor.clinic?.name,
+          location: `${apiDoctor.clinic?.address.locality}, ${apiDoctor.clinic?.address.city}`,
+          consultationMode,
+          imageUrl: apiDoctor.photo,
+          gender: "" // API doesn't provide gender info
+        } as Doctor;
+      });
       
       setDoctors(processedDoctors);
       setSpecialties(extractSpecialties(processedDoctors));
