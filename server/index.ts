@@ -56,12 +56,20 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use port 4000 and localhost for development
-  const port = 4000;
-  server.listen({
-    port,
-    host: "localhost",
-  }, () => {
-    log(`serving on http://localhost:${port}`);
-  });
+  // Use environment variables for port, or default to 4000
+  const port = process.env.PORT || 4000;
+  
+  // For Vercel, don't specify the host in production
+  if (process.env.NODE_ENV === 'production') {
+    server.listen(port, () => {
+      log(`Server running in production mode on port ${port}`);
+    });
+  } else {
+    server.listen({
+      port: Number(port),
+      host: "localhost",
+    }, () => {
+      log(`serving on http://localhost:${port}`);
+    });
+  }
 })();
