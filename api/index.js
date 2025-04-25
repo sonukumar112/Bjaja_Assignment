@@ -1,21 +1,19 @@
-// Vercel serverless function to handle API and frontend requests
+// Minimal serverless function for Vercel
 import express from 'express';
-import { createServer } from 'http';
-import path from 'path';
-import fs from 'fs';
 
-// Import API route handlers
+// Create Express app
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Simple logging middleware
+// Add CORS headers for API requests
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
   next();
 });
 
-// API routes
+// API endpoint for doctors
 app.get('/api/doctors', async (req, res) => {
   try {
     const response = await fetch("https://srijandubey.github.io/campus-api-mock/SRM-C1-25.json");
@@ -30,37 +28,10 @@ app.get('/api/doctors', async (req, res) => {
   }
 });
 
-// Serve static files from the build directory
-const distPath = path.join(process.cwd(), 'dist/public');
-app.use(express.static(distPath));
-
-// For all other routes, serve the index.html
-app.get('*', (req, res) => {
-  const indexPath = path.join(distPath, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
-  }
-  return res.status(404).send('Not found');
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-  });
-});
-
-// Create HTTP server
-const server = createServer(app);
-
-// Start server if not being imported
-if (require.main === module) {
-  const port = process.env.PORT || 3000;
-  server.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
-}
-
-// Export for serverless
+// Export the Express handler
 export default app; 
