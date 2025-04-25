@@ -1,6 +1,6 @@
 {
-  "rewrites": [
-    { "source": "/api/doctors", "destination": "/api/doctors.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "version": 2,
+  "buildCommand": "node build-static.js",
+  "outputDirectory": "dist",
+  "cleanUrls": true
 } 
