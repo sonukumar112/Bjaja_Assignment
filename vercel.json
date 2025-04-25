@@ -1,8 +1,6 @@
 {
-  "version": 2,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/api/doctors", "dest": "/api/doctors.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/doctors", "destination": "/api/doctors.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 } 
