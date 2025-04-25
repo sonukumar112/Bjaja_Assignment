@@ -19,4 +19,14 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
   },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api/doctors': {
+        target: 'https://srijandubey.github.io',
+        changeOrigin: true,
+        rewrite: (path) => '/campus-api-mock/SRM-C1-25.json'
+      }
+    }
+  }
 });
