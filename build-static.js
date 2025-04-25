@@ -73,39 +73,139 @@ window.DOCTOR_DATA = ${JSON.stringify(data, null, 2)};`;
       font-size: 14px;
       line-height: 1.4;
     }
+    .filters {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f8f8;
+      border-radius: 8px;
+    }
+    .filters select, .filters input {
+      margin-right: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .filters button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .filters button:hover {
+      background: #45a049;
+    }
   </style>
 </head>
 <body>
   <h1>Doctor Directory</h1>
+  
+  <div class="filters">
+    <input type="text" id="search" placeholder="Search by name...">
+    <select id="specialty-filter">
+      <option value="">All Specialties</option>
+    </select>
+    <select id="sort-by">
+      <option value="">Sort By</option>
+      <option value="fees-asc">Fees: Low to High</option>
+      <option value="fees-desc">Fees: High to Low</option>
+      <option value="exp-asc">Experience: Low to High</option>
+      <option value="exp-desc">Experience: High to Low</option>
+    </select>
+    <button id="apply-filters">Apply Filters</button>
+  </div>
+  
   <div class="doctors-grid" id="doctors-container"></div>
   
   <script src="/data.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const doctorsContainer = document.getElementById('doctors-container');
+      const searchInput = document.getElementById('search');
+      const specialtyFilter = document.getElementById('specialty-filter');
+      const sortBySelect = document.getElementById('sort-by');
+      const applyFiltersButton = document.getElementById('apply-filters');
       
       // Use the pre-fetched data
-      const doctors = window.DOCTOR_DATA;
+      const doctors = window.DOCTOR_DATA || [];
+      let filteredDoctors = [...doctors];
       
-      if (doctors && doctors.length) {
-        doctors.forEach(doctor => {
-          const doctorCard = document.createElement('div');
-          doctorCard.className = 'doctor-card';
-          
-          doctorCard.innerHTML = \`
-            <div class="doctor-name">\${doctor.name}</div>
-            <div class="doctor-specialty">\${doctor.specialty}</div>
-            <div class="doctor-details">
-              <p>Experience: \${doctor.experience} years</p>
-              <p>Consultation Fee: ₹\${doctor.fees}</p>
-              <p>Location: \${doctor.location}</p>
-            </div>
-          \`;
-          
-          doctorsContainer.appendChild(doctorCard);
+      // Populate specialties dropdown
+      const specialties = new Set();
+      doctors.forEach(doctor => {
+        if (doctor.speciality) {
+          specialties.add(doctor.speciality);
+        }
+      });
+      
+      specialties.forEach(specialty => {
+        const option = document.createElement('option');
+        option.value = specialty;
+        option.textContent = specialty;
+        specialtyFilter.appendChild(option);
+      });
+      
+      // Display all doctors initially
+      renderDoctors(doctors);
+      
+      // Add event listener for filters
+      applyFiltersButton.addEventListener('click', applyFilters);
+      
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedSpecialty = specialtyFilter.value;
+        const sortOption = sortBySelect.value;
+        
+        // Filter by search term and specialty
+        filteredDoctors = doctors.filter(doctor => {
+          const nameMatch = doctor.name && doctor.name.toLowerCase().includes(searchTerm);
+          const specialtyMatch = !selectedSpecialty || doctor.speciality === selectedSpecialty;
+          return nameMatch && specialtyMatch;
         });
-      } else {
-        doctorsContainer.innerHTML = '<p>No doctors found.</p>';
+        
+        // Sort results
+        if (sortOption) {
+          filteredDoctors.sort((a, b) => {
+            if (sortOption === 'fees-asc') {
+              return (a.fees || 0) - (b.fees || 0);
+            } else if (sortOption === 'fees-desc') {
+              return (b.fees || 0) - (a.fees || 0);
+            } else if (sortOption === 'exp-asc') {
+              return (a.experience || 0) - (b.experience || 0);
+            } else if (sortOption === 'exp-desc') {
+              return (b.experience || 0) - (a.experience || 0);
+            }
+            return 0;
+          });
+        }
+        
+        renderDoctors(filteredDoctors);
+      }
+      
+      function renderDoctors(doctorsList) {
+        doctorsContainer.innerHTML = '';
+        
+        if (doctorsList && doctorsList.length) {
+          doctorsList.forEach(doctor => {
+            const doctorCard = document.createElement('div');
+            doctorCard.className = 'doctor-card';
+            
+            doctorCard.innerHTML = \`
+              <div class="doctor-name">Dr. \${doctor.name || 'Unknown'}</div>
+              <div class="doctor-specialty">\${doctor.speciality || 'General Practitioner'}</div>
+              <div class="doctor-details">
+                <p>Experience: \${doctor.experience || '0'} Years of experience years</p>
+                <p>Consultation Fee: ₹\${doctor.fees || 'N/A'}</p>
+                <p>Location: \${doctor.location || 'Location not specified'}</p>
+              </div>
+            \`;
+            
+            doctorsContainer.appendChild(doctorCard);
+          });
+        } else {
+          doctorsContainer.innerHTML = '<p>No doctors found matching your criteria.</p>';
+        }
       }
     });
   </script>
