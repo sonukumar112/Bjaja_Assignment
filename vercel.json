@@ -7,7 +7,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "handle": "filesystem" },
-    { "src": "/assets/(.*)", "dest": "/dist/public/assets/$1" },
-    { "src": "/(.*)", "dest": "/dist/public/index.html" }
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 } 
